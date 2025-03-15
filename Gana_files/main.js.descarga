@@ -1,0 +1,150 @@
+(function ($, Drupal) {
+    $(document).ready(function(){
+        //Dropdown
+        $(".dropdown .toggle").click(function(){  
+            $(document).unbind('click');
+            $("body").toggleClass("overlay");
+            $(this).toggleClass("open");
+            $(this).next().slideToggle();                
+            var $this = $(this);
+            $(document).on('click', function(event) {                
+                if ($(event.target).is('body')) {
+                    $("body").toggleClass("overlay");
+                    $($this).toggleClass("open");
+                    $($this).next().slideToggle();            
+                }
+            });
+        });
+        $(".dropdown .toggle2").click(function(){            
+            $(this).toggleClass("open");
+            $(this).next().slideToggle();
+        });
+
+   
+        
+        //Input file
+        var ajaxCounter = 0;
+
+        var fileName = 'Selecciona la factura a cargar.';
+        var $label = $('.label-file-upload');
+        var labelVal = $label.html();
+        var $input = $('#edit-file-upload');
+
+        $input.on('change', function(e) {
+            fileName = e.target.value.split('\\').pop();
+        });
+
+        $(document).ajaxComplete(function(event, xhr, settings) {
+            if ($('input[name="file[fids]"]').val() == "") {
+                $('.file-format').html('Recuerda que sólo participan facturas de compras del 1 de enero de 2025 al 31 de marzo de 2025 (Extensión o tipo de archivo permitido: .pdf, .jpg,.jpeg, .png)');
+            }
+            ajaxCounter++;
+            if (ajaxCounter % 2 == 0) {
+                $label.html(labelVal);
+            }
+            else{                
+                $('.file-format').html('<img class="form-upload-check" src="/themes/custom/ganaton_nestle/dist/img/icons/check.png">');
+                $label.html('Archivo cargado correctamente');
+                // $label.html(fileName);
+            }
+        });
+         
+        $('.send-receipt-info').on('click', function(){
+            var color = $(this).attr('data-status-color');
+            color = color == 'blue' ? 'yellow' : color;            
+            $('.data-status').removeClass('yellow');
+            $('.data-status').removeClass('green');
+            $('.data-status').removeClass('red');
+            $('.data-date').html($(this).attr('data-date'))
+            $('.data-status').html($(this).attr('data-status'))
+            $('.data-product').html($(this).attr('data-product'))
+            $('.data-status').addClass(color);
+            $('.data-number-tickets').html($(this).attr('data-number-tickets'))                        
+            $('.view-invoice').attr('href', $(this).attr('data-image'));
+        });
+
+        //Modal close on click outside
+        $(document).on('click', function(event){
+            // if (!$(event.target).closest('.modal-dialog').length && !$(event.target).closest('.open-modal').length){
+            //     $('.modal').fadeOut("fast");
+            // }
+        });
+
+        //Pagination
+        $('.pagination .page-item.active').last().each(function() {
+            if ($(this).nextAll('.page-item').length === 0) {
+              $(this).addClass('no-before');
+            }
+        });
+
+        //Slider Brands
+        $(".brands.owl-carousel").owlCarousel({
+            autoplay: true,
+            autoplayTimeout: 1000,
+            dots: false,
+            loop: true,
+            nav: true,
+            navText: [
+                '<img src="/themes/custom/ganaton_nestle/dist/img/icons/arrow-left-white.png">', 
+                '<img src="/themes/custom/ganaton_nestle/dist/img/icons/arrow-right-white.png">'
+            ],
+            responsive : {
+                0 : {
+                    items: 6,
+                    margin: 10
+                },
+                768 : {
+                    items: 7,
+                    margin: 15
+                },
+                1025 : {
+                    items: 9,
+                    margin: 25
+                }
+            }
+        });
+
+        //Validate Password
+        function validatePassword() {
+            const password = $('#password').val();            
+    
+            const minLength = password.length >= 6;
+            // const hasUpperCase = /[A-Z]/.test(password);
+            // const hasLowerCase = /[a-z]/.test(password);
+            // const hasNumber = /\d/.test(password);
+            // const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            if (password.length == 0) {
+                $('.password-reset__rules').addClass('hidden');
+            }else{
+                $('.password-reset__rules').removeClass('hidden');
+            }
+    
+            function toggleIndicator(condition, selector) {
+              if (condition) {
+                $(selector).removeClass('indicator--error').addClass('indicator--success');
+              } else {
+                $(selector).removeClass('indicator--success').addClass('indicator--error');
+              }
+            }
+
+            if ($('#confirmPassword').length > 0) {
+                $('#confirmPassword').on('input', validateConfirmPassword);
+                function validateConfirmPassword() {
+                    const confirm_password = $('#confirmPassword').val();                                   
+                    const matchPassword = password === confirm_password;
+                    toggleIndicator(matchPassword, '.password-reset__rule-confirm');                    
+                }           
+            }
+    
+            toggleIndicator(minLength, '.password-reset__rule-length');
+            // toggleIndicator(hasUpperCase, '.password-reset__rule-upper');
+            // toggleIndicator(hasLowerCase, '.password-reset__rule-lower');
+            // toggleIndicator(hasNumber, '.password-reset__rule-digit');
+            // toggleIndicator(hasSpecialChar, '.password-reset__rule-special');
+          }
+    
+          $('#password').on('input', validatePassword);
+          
+    });
+})(jQuery, Drupal);

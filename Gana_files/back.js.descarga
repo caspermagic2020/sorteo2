@@ -1,0 +1,586 @@
+/**
+ * @file
+ * JavaScript behaviors for managed file uploads.
+ */
+
+(function ($, Drupal, once) {
+
+  'use strict';
+
+  /**
+   * Track file uploads and display confirm dialog when an file upload is in progress.
+   *
+   * @type {Drupal~behavior}
+   */
+  Drupal.behaviors.webformManagedFileAutoUpload = {
+    attach: function attach(context) {
+      if (typeof Drupal.Ajax !== 'undefined' && typeof Drupal.Ajax.prototype.beforeSubmitWebformManagedFileAutoUploadOriginal === 'undefined') {
+        Drupal.Ajax.prototype.beforeSubmitWebformManagedFileAutoUploadOriginal = Drupal.Ajax.prototype.beforeSubmit;
+        Drupal.Ajax.prototype.beforeSubmit = function (form_values, element_settings, options) {
+          if (options.extraData._triggering_element_name === 'op') {
+            $('#invoice-loading').removeClass('hidden');
+            $('#invoice-loading').fadeIn("fast");
+            jQuery('.loading-bar').css('left', '-100%');
+            var completed = 0;
+            var processes = 8;
+            setInterval(function () {
+              if (completed <= processes) {
+
+                var progress = (completed / processes) * 100;
+                jQuery(".loading-bar-container").show();
+                jQuery('.loading-bar').html('');
+                jQuery(".loading-bar-outer-text").html("Leyendo información...");
+
+                jQuery('.loading-bar').stop().animate({
+                  left: '-' + (100 - progress) + '%'
+                }, 600, function () {
+                  if (progress === 100) {
+                    jQuery('.loading-bar').html("Por favor espere");
+                    jQuery(".loading-bar-outer-text").html('');
+                  }
+                });
+                completed++;
+              }
+            }, 1000);
+          }
+          return this.beforeSubmitWebformManagedFileAutoUploadOriginal.apply(this, arguments);
+        };
+      }
+    },
+  };
+
+})(jQuery, Drupal, once);
+
+
+
+(function ($, Drupal) {
+  $.fn.sweetAlertNormal = function (title, message, type, url) {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: type
+    }).then(function () {
+      if (url != "") {
+        window.location = url;
+      }
+    });
+  };
+   
+  $.fn.dl_login = function () {
+    window.dataLayer = window.dataLayer || []; 
+    window.dataLayer.push(
+    {'event' : 'gtm.click', 
+    'event_name' : 'gtm.click', 
+    'link_classes' : 'button login-button button js-form-submit form-submit form-control', 
+    'link_domain' : 'https://www.nestletehacebien.co/', 
+    'link_id' : 'edit-login-action', 
+    'link_text' : 'Enviar', 
+    'link_url' : 'https://www.nestletehacebien.co/iniciar-sesion', 
+    'param_location' : 'login_section', 
+    'location_id' : 'login_form',    
+    });
+  };
+  
+  $.fn.dl_receipt = function () {
+    window.dataLayer = window.dataLayer || []; 
+    window.dataLayer.push(
+        {'event' : 'gtm.click', 
+        'event_name' : 'gtm.click', 
+        'link_classes' : 'button loading_receipt_button button js-form-submit form-submit form-control', 
+        'link_domain' : 'https://www.nestletehacebien.co/', 
+        'link_id' : 'edit-send-receipt', 
+        'link_text' : 'Enviar', 
+        'link_url' : 'https://www.nestletehacebien.co/subir-factura', 
+        'param_location' : 'receipt_section', 
+        'location_id' : 'receipt_form',        
+        });
+  };
+  
+  $.fn.dl_register = function () {
+    window.dataLayer = window.dataLayer || []; 
+    window.dataLayer.push(
+      {'event' : 'gtm.click', 
+      'event_name' : 'gtm.click', 
+      'link_classes' : 'button submit-form-register button js-form-submit form-submit form-control', 
+      'link_domain' : 'https://www.nestletehacebien.co/', 
+      'link_id' : 'edit-register-action', 
+      'link_text' : 'Registrarme', 
+      'link_url' : 'https://www.nestletehacebien.co/registro', 
+      'param_location' : 'register_section', 
+      'location_id' : 'register_form',      
+      });
+  };
+  
+  $.fn.dl_register_home = function () {
+    window.dataLayer = window.dataLayer || []; 
+
+    window.dataLayer.push(
+      {'event' : 'gtm.click', 
+      'event_name' : 'gtm.click', 
+      'link_classes' : 'button submit-form-register button js-form-submit form-submit form-control', 
+      'link_domain' : 'https://www.nestletehacebien.co/', 
+      'link_id' : 'edit-register-action', 
+      'link_text' : 'Registrarme', 
+      'link_url' : 'https://www.nestletehacebien.co/', 
+      'param_location' : 'home_section', 
+      'location_id' : 'register_form',      
+      });
+  };
+
+
+
+  $.fn.setVisualWinner = function (targetNumber,display_id) {
+    const display = $(display_id); // El contexto será el elemento en el que se llama la función
+    display.empty(); // Limpiar el display
+    for (let i = 0; i < 8; i++) {
+      const circle = $('<div>')
+        .addClass('circle')
+        .text('0'); // Inicializar con "0"
+      display.append(circle);
+    }
+
+    let elapsedTime = 0; // Tiempo transcurrido
+    const duration = 3000; // Duración de la animación en milisegundos (3 segundos)
+    const circles = display.find('.circle');
+    let interval;
+
+    // Mostrar números aleatorios en cada círculo durante la animación
+    interval = setInterval(() => {
+      elapsedTime += 50; // Incrementar el tiempo transcurrido
+
+      circles.each(function () {
+        const randomDigit = Math.floor(Math.random() * 10);
+        $(this).text(randomDigit);
+      });
+
+      // Si se alcanza el tiempo final, mostrar el número objetivo
+      if (elapsedTime >= duration) {
+        clearInterval(interval);
+        targetNumber.split('').forEach((digit, index) => {
+          $(circles[index])
+            .text(digit)
+            .addClass('success');
+        });
+        $('.user_info').removeClass('hidden');
+      }
+    }, 50); // Actualización cada 50ms
+
+
+  };
+
+
+  $.fn.resetRecaptcha = function () {
+    console.log('reset');
+    grecaptcha.reset();
+  };
+
+  $.fn.showLoading = function () {
+    $('#invoice-loading').fadeIn("fast");
+  };
+
+  $.fn.loadClose = function (targetModal) {
+    $('.close-modal').on('click', function () {
+      $(this).closest('.modal').fadeOut("fast");
+    });
+  };
+
+  $.fn.sweetAlertHtml = function (title, message, type, url) {
+    Swal.fire({
+      title: title,
+      html: message,
+      icon: type
+    }).then(function () {
+      if (url != "") {
+        window.location = url;
+      }
+    });
+  };
+
+  $.fn.sweetAlertAsignarVendedor = function (nid, vendedores) {
+
+    Swal.fire({
+      title: "Asignar Vendedor",
+      html: `
+      <h3 for="swal-comision-vendedor">Nombre</h3>
+      <select id="swal-comision-vendedor" class="swal2-input select2">
+      `+vendedores+`
+      </select>
+
+      `,
+      focusConfirm: false,
+      preConfirm: () => {
+        const vendedor = document.getElementById("swal-comision-vendedor").value        
+        jQuery.ajax({
+          type: 'get',
+          dataType: 'JSON',
+          url: "/set-vendedor/"+nid+"/"+vendedor,
+        }).done(function(data){
+          var swal_type = "success";
+          if (data.error == 1) {
+            swal_type = "error";
+          }
+          Swal.fire(data.msg, '', swal_type).then(function() {location.reload();});
+        })
+      }
+    });
+
+    $('.select2').select2({dropdownCssClass: "increasedzindexclass"});
+    $('.increasedzindexclass').css('z-index', '10000');
+
+  };
+
+})(jQuery, Drupal);
+
+
+window.fbAsyncInit = function () {
+  FB.init({
+    appId: '547343421561389',
+    cookie: true,
+    xfbml: true,
+    version: 'v21.0'
+  });
+  FB.AppEvents.logPageView();
+};
+(function (d, s, id) {
+  var js,
+    fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {
+    return;
+  }
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://connect.facebook.net/es_LA/sdk.js";
+  fjs.parentNode.insertBefore(js, fjs);
+})(document, "script", "facebook-jssdk");
+
+function facebook_api() {
+  FB.login(
+    function (response) {
+      if (response.status === "connected") {
+        if (response.authResponse) {
+          var access_token = response.authResponse.accessToken;
+          var userID = response.authResponse.userID;
+          FB.api(
+            "/me",
+            { fields: "name, first_name, last_name, email, picture" },
+            function (response) {
+              jQuery(".form-item-name").val(response.first_name);
+              jQuery(".form-item-lastname").val(response.last_name);
+              jQuery(".form-item-email").val(response.email);
+              jQuery(".form-item-fbid").val(userID);
+              jQuery('.password-to-hide').addClass("hidden");
+            }
+          );
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo iniciar sesión con Facebook.",
+            icon: "error",
+          });
+        }
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo iniciar sesión con Facebook.",
+          icon: "error",
+        });
+
+      }
+    },
+    {
+      scope: "email",
+    }
+  );
+
+}
+
+
+function facebook_api_login() {
+  FB.login(
+    function (response) {
+      if (response.status === "connected") {
+        if (response.authResponse) {
+          var access_token = response.authResponse.accessToken;
+          var userID = response.authResponse.userID;
+          FB.api(
+            "/me",
+            { fields: "name, first_name, last_name, email, picture" },
+            function (response) {
+              jQuery(".form-item-fbid").val(userID);
+              jQuery('.form-item-token').val(access_token);
+
+
+              jQuery.ajax({
+                url: '/s-a',
+                type: 'POST',
+                data: {
+                  'fbid': userID,
+                  'token': access_token
+                },
+                success: function (data) {
+                  var response = JSON.parse(data);
+                  if (response == true) {
+                    window.dataLayer = window.dataLayer || []; 
+                    window.dataLayer.push(
+                    {'event' : 'gtm.click', 
+                    'event_name' : 'gtm.click', 
+                    'link_classes' : 'button login-button button js-form-submit form-submit form-control', 
+                    'link_domain' : 'https://www.nestletehacebien.co/', 
+                    'link_id' : 'edit-login-action', 
+                    'link_text' : 'Enviar', 
+                    'link_url' : 'https://www.nestletehacebien.co/iniciar-sesion', 
+                    'param_location' : 'login_section', 
+                    'location_id' : 'login_form',                    
+                    });
+                    setTimeout(function() {
+                      window.location = '/subir-factura';
+                    }, 2000);
+                  } else {
+                    Swal.fire({
+                      title: "Error",
+                      text: "No se ha encontrado una cuenta con este usuario.",
+                      icon: "error",
+                    });
+                  }
+                },
+              });
+            }
+          );
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo iniciar sesión con Facebook.",
+            icon: "error",
+          });
+        }
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "No se pudo iniciar sesión con Facebook.",
+          icon: "error",
+        });
+
+      }
+    },
+    {
+      scope: "email",
+    }
+  );
+
+}
+
+
+jQuery(".btn-facebook-register").click(function () {
+  facebook_api();
+});
+
+jQuery(".btn-facebook-login").click(function (e) {
+  e.preventDefault();
+  facebook_api_login();
+});
+
+(function($, Drupal, drupalSettings) {
+
+  Drupal.behaviors.receipt_management = {
+
+    attach: function(context, settings) {          
+     
+      const products = once('prueba', '.remove-product', context);
+      products.forEach(function (element) {
+        $('.remove-product').unbind( "click" );
+        $('.remove-product').click(function () {        
+          var data_id = jQuery(this).attr('data-position');                  
+             
+          var producto = String(jQuery(this).attr('data-name'));
+          var cantidad = String(jQuery(this).attr('data-cantidad'));
+          var gramaje = jQuery(this).attr('data-gramaje') ? String(jQuery(this).attr('data-gramaje')) : null;
+          var precio = jQuery(this).attr('data-precio') ? String(jQuery(this).attr('data-precio')) : null;
+          var boletas = String(jQuery(this).attr('data-boletos'));                
+
+
+          let inputJson = document.querySelector(".json-productos");
+          if (!inputJson) return;
+
+          let productos = JSON.parse(decodeURIComponent(inputJson.value.replace(/&quot;/g, '"')));
+
+          let index = productos.findIndex(item =>{
+            let success = 0;
+            if (item.producto === producto) {
+              success++;             
+            }
+
+            if (item.cantidad === cantidad) {
+              success++;
+            }
+
+            if (item.gramaje === gramaje) {
+              success++;
+            }
+
+            if (item.precio === precio) {
+              success++;
+            }
+            
+            if (String(item.boletas) === boletas) {
+              success++;
+            }
+            console.log('Success', success);
+            if (success === 5) {
+              return true;
+            }
+
+            return false;
+          });
+             
+        if (index !== -1) {          
+            productos.splice(index, 1);
+        }
+
+
+        jQuery('.json-productos').val(JSON.stringify(productos));
+
+          var new_total = productos.reduce((sum, item) => sum + (parseInt(item.cantidad) * parseInt(item.boletas)), 0);
+          jQuery('.total-ticket-to-give').text(new_total);        
+          jQuery('.ticket-to-give—info-'+data_id).remove();
+                    
+        });
+      })
+
+
+
+
+      
+      $('.a_pending_receipt', context).click(function () {
+        var pot = jQuery(this).attr('data-id');
+
+        Swal.fire({
+          title: '¿Estas Seguro?',
+          html:
+          'Esta acción <b>NO</b> se puede deshacer <br>' +
+          'Tu factura será validada por un asesor',
+          showDenyButton: true,
+          confirmButtonText: 'Solicitar revisión',
+          denyButtonText: 'Cancelar',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            jQuery.ajax({
+              type: 'get',
+              dataType: 'JSON',
+              url: "/aop/valid/"+jQuery(this).attr('data-id')+ "/pending/"+jQuery(this).attr('data-file')+ "/"+jQuery(this).attr('data-uid'),
+            }).done(function(data){
+              var swal_type = "success";
+              if (data.error == 1) {
+                swal_type = "error";
+              }
+              Swal.fire(data.msg, '', swal_type).then(function() {
+                window.location = '/factura-pendiente';
+              });
+            })
+          } else if (result.isDenied) {
+            Swal.fire('No se realizó ninguna operación', '', 'info')
+          }
+        })
+      });
+
+    }
+  }
+  
+  
+  Drupal.behaviors.modals = {
+
+    attach: function(context, settings) {          
+     
+      const modal = once('modal', '.open-modal', context);
+      if (modal.length > 0) {        
+        jQuery('.open-modal').on('click', function(){
+          var targetModal = jQuery(this).data('target');
+          if (jQuery('.modal:visible').length){
+              jQuery('.modal').fadeOut("fast", function(){
+                  jQuery(targetModal).fadeIn("fast");
+              });
+          }
+          else{
+              jQuery(targetModal).fadeIn("fast");
+          }
+      });
+      
+      //Modal open with data
+      jQuery('.send-code').on('click', function(){
+          var ticketCode = jQuery(this).attr('data-code');
+          jQuery('.modal-ticket-code').html(ticketCode);           
+      });
+      
+      jQuery('.close-modal').on('click', function(){
+          jQuery(this).closest('.modal').fadeOut("fast");
+      });
+      }
+
+    }
+  }
+
+})(jQuery, Drupal, drupalSettings);
+
+
+
+function handleCredentialResponse(response) {
+  const idToken = response.credential;
+
+  // Decodificar el ID token
+  const userInfo = JSON.parse(atob(idToken.split('.')[1]));
+  console.log('Datos del usuario:', userInfo);
+
+  jQuery(".form-item-name").val(userInfo.given_name);
+  jQuery(".form-item-lastname").val(userInfo.family_name);
+  jQuery(".form-item-email").val(userInfo.email);
+  jQuery(".form-item-g_id").val(userInfo.sub);
+  jQuery('.password-to-hide').addClass("hidden");
+}
+
+function google_api_login(response) {
+
+  const idToken = response.credential;
+  const userInfo = JSON.parse(atob(idToken.split('.')[1]));
+  const accessToken = response.credential;
+  
+  ajaxGoogleLogin(userInfo, accessToken);
+}
+
+function ajaxGoogleLogin(userInfo, accessToken) {
+  jQuery.ajax({
+    url: '/s-a',
+    type: 'POST',
+    data: {
+      'g_id': userInfo.sub,
+      'token': accessToken
+    },
+    success: function (data) {
+      var response = JSON.parse(data);
+                  if (response == true) {
+                    window.dataLayer = window.dataLayer || []; 
+                    window.dataLayer.push(
+                    {'event' : 'gtm.click', 
+                    'event_name' : 'gtm.click', 
+                    'link_classes' : 'button login-button button js-form-submit form-submit form-control', 
+                    'link_domain' : 'https://www.nestletehacebien.co/', 
+                    'link_id' : 'edit-login-action', 
+                    'link_text' : 'Enviar', 
+                    'link_url' : 'https://www.nestletehacebien.co/iniciar-sesion', 
+                    'param_location' : 'login_section', 
+                    'location_id' : 'login_form',                      
+                    });                    
+                    setTimeout(function() {
+                      window.location = '/subir-factura';
+                    }, 2000);
+                  } else {
+                    Swal.fire({
+                      title: "Error",
+                      text: "No se ha encontrado una cuenta con este usuario.",
+                      icon: "error",
+                    });
+                  }
+    },
+    error: function (xhr, status, error) {
+      console.error('Error en la solicitud AJAX:', xhr.responseText || error);
+    }
+  });
+}
